@@ -1,3 +1,38 @@
 {
-  "extends": "next/core-web-vitals"
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "jest": true
+  },
+  "extends": [
+    "next",
+    "next/core-web-vitals",
+    "plugin:import/typescript",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["react", "@typescript-eslint", "prettier"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["off"],
+    "class-methods-use-this": "off",
+    "consistent-return": "off",
+    "import/no-cycle": "off",
+    "import/prefer-default-export": "off",
+    "no-underscore-dangle": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "@next/next/no-img-element": "off",
+    "@next/next/next-script-for-ga": "off"
+  }
 }

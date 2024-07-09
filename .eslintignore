@@ -1,0 +1,11 @@
+node_modules
+.next
+.swc
+.vscode
+.env
+out
+patches
+postcss.config.js
+public
+next.config.js
+tailwind.config.js
