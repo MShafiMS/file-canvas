@@ -1,6 +1,5 @@
 import { AccountMenu, ToggleTheme } from '@components/header';
 import { getRouteLabel, navList } from '@constant/nav-list';
-import { DoubleArrow } from '@mui/icons-material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { ListSubheader, Typography, useMediaQuery } from '@mui/material';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
@@ -118,82 +117,72 @@ export const SidebarLayout = ({ children }: IProps) => {
 
   const DrawerChild = () => {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          height: '100vh',
-          bgcolor: 'background.default',
-        }}
-      >
-        <div>
+      <Box sx={{ height: '100vh', bgcolor: 'background.default' }}>
+        <Toolbar
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: [1],
+          }}
+        >
           <DrawerHeader sx={{ display: 'flex', justifyContent: 'start' }}>
             <Link href={'/'}>
               <img src="/images/logo.svg" alt="logo" width={140} />
             </Link>
           </DrawerHeader>
-          <Divider />
-          {navList.map((listItem, index) => (
-            <List
-              key={index}
-              component="nav"
-              saria-labelledby="nested-list-subheader"
-              disablePadding
-              subheader={
-                listItem.subHeader && (
-                  <ListSubheader sx={{ bgcolor: 'background.default' }} component="div" id="nested-list-subheader">
-                    {listItem.subHeader}
-                  </ListSubheader>
-                )
-              }
-            >
-              {listItem.menus.map((menu) => (
-                <Link href={menu.route} key={menu.label}>
-                  <ListItem selected={isSelected(menu.route)} disablePadding sx={{ display: 'block' }}>
-                    <ListItemButton
+          <IconButton onClick={handleDrawerClick}>
+            <MenuIcon />
+          </IconButton>
+        </Toolbar>
+        <Divider />
+        {navList.map((listItem, index) => (
+          <List
+            key={index}
+            component="nav"
+            saria-labelledby="nested-list-subheader"
+            disablePadding
+            subheader={
+              listItem.subHeader && (
+                <ListSubheader sx={{ bgcolor: 'background.default' }} component="div" id="nested-list-subheader">
+                  {listItem.subHeader}
+                </ListSubheader>
+              )
+            }
+          >
+            {listItem.menus.map((menu) => (
+              <Link href={menu.route} key={menu.label} style={{ textDecoration: 'none' }}>
+                <ListItem selected={isSelected(menu.route)} disablePadding sx={{ display: 'block' }}>
+                  <ListItemButton
+                    sx={{
+                      minHeight: 48,
+                      justifyContent: open ? 'initial' : 'center',
+                      px: 2.5,
+                    }}
+                  >
+                    <ListItemIcon
                       sx={{
-                        minHeight: 48,
-                        justifyContent: open ? 'initial' : 'center',
-                        px: 2.5,
+                        minWidth: 0,
+                        mr: open ? 3 : 'auto',
+                        justifyContent: 'center',
                       }}
                     >
-                      <ListItemIcon
-                        sx={{
-                          minWidth: 0,
-                          mr: open ? 3 : 'auto',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <menu.icon />
-                      </ListItemIcon>
-                      <ListItemText primary={menu.label} sx={{ opacity: open ? 1 : 0 }} />
-                    </ListItemButton>
-                  </ListItem>
-                </Link>
-              ))}
-            </List>
-          ))}
-        </div>
-        <Box display="flex" flexDirection={open ? 'row' : 'column'} justifyContent="space-between" margin={1.5}>
-          <ToggleTheme />
-          <IconButton onClick={handleDrawerClick} sx={{ rotate: open ? '180deg' : 'none' }}>
-            <DoubleArrow />
-          </IconButton>
-        </Box>
+                      <menu.icon />
+                    </ListItemIcon>
+                    <ListItemText primary={menu.label} sx={{ opacity: open ? 1 : 0, color: 'primary.main' }} />
+                  </ListItemButton>
+                </ListItem>
+              </Link>
+            ))}
+          </List>
+        ))}
       </Box>
     );
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar
-        position="fixed"
-        open={open}
-        className="shadow-none"
-        sx={{ boxShadow: 'none', bgcolor: 'background.default' }}
-        color="inherit"
-      >
+      <AppBar position="fixed" open={open} sx={{ boxShadow: 'none' }} color="default">
         <Toolbar>
           <IconButton
             size="medium"
@@ -211,6 +200,7 @@ export const SidebarLayout = ({ children }: IProps) => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
             {getRouteLabel(route)}
           </Typography>
+          <ToggleTheme />
           <AccountMenu />
         </Toolbar>
       </AppBar>
@@ -233,9 +223,19 @@ export const SidebarLayout = ({ children }: IProps) => {
       <Drawer variant="permanent" open={open} sx={{ display: { xs: 'none', sm: 'block' } }}>
         <DrawerChild />
       </Drawer>
-      <Box component="main" sx={{ width: '100%', overflowY: 'auto' }}>
-        <DrawerHeader className="lg:hidden" />
-        <Divider />
+      <Box
+        component="main"
+        sx={{
+          width: '100%',
+          height: '100vh',
+          maxHeight: '100vh',
+          overflowY: 'auto',
+          bgcolor: 'background.default',
+          color: 'primary.main',
+          marginTop: 8,
+        }}
+      >
+        <DrawerHeader sx={{ display: { xs: 'block', sm: 'none' } }} />
         {children}
       </Box>
     </Box>

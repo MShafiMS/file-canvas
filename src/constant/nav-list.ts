@@ -37,8 +37,8 @@ export const navList: ISidebarNavList[] = [
         icon: Folder,
       },
       {
-        label: 'Canvas',
-        route: '/canvas',
+        label: 'Drawings',
+        route: '/drawings',
         icon: Draw,
       },
     ],

@@ -6,4 +6,9 @@ export const dark: PaletteOptions = {
     default: grey[900],
     paper: grey[700],
   },
+  primary: {
+    main: '#FFFFFF',
+    light: '#000000',
+    dark: '#FFFFFF',
+  },
 };

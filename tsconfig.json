@@ -18,6 +18,7 @@
       "@components/*": ["src/components/*"],
       "@constant/*": ["src/constant/*"],
       "@styles/*": ["src/styles/*"],
+      "@modules/*": ["src/modules/*"],
       "@enums": ["src/enums"],
       "@layouts": ["src/layouts"]
     }
