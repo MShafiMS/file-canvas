@@ -1,6 +1,5 @@
 import { STROKE } from '@enums';
 import { Box, ButtonBase, Paper, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
 import { ElementAttributes } from '@types';
 
 const colors = ['#000000', '#e91e63', '#9c27b0', '#3f51b5', '#2196f3'];
@@ -20,20 +19,18 @@ export const Panel = ({ attributes, setAttributes }: IProps) => {
 
   return (
     <Paper
-      elevation={3}
+      elevation={1}
       sx={{
         position: 'absolute',
         left: 16,
         top: 60,
         zIndex: 10,
         padding: 1,
-        bgcolor: 'primary.dark',
+        bgcolor: 'background.default',
         color: 'primary.light',
         height: 'fit-content',
         borderRadius: 1,
-        border: 0.5,
         paddingBottom: 2,
-        borderColor: grey[300],
       }}
     >
       <Typography display="block" fontSize={12} fontWeight={600}>

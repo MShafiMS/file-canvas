@@ -1,7 +1,7 @@
 import Dialog from '@mui/material/Dialog';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
-import { Template } from '@types';
+import { ISketch } from '@stores';
 import * as React from 'react';
 import { Canvas } from './Canvas';
 
@@ -17,7 +17,7 @@ const Transition = React.forwardRef(function Transition(
 type Props = {
   open: boolean;
   onClose: () => void;
-  template: Template;
+  template: ISketch;
 };
 
 export const CanvasDialog = ({ open, onClose, template }: Props) => {

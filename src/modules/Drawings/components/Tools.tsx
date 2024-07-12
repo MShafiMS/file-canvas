@@ -29,8 +29,8 @@ export const Tools = ({ tool, setTool }: IProps) => {
         zIndex: 10,
         paddingX: 2,
         paddingY: 1,
-        bgcolor: 'slategray',
-        color: 'primary.dark',
+        bgcolor: 'background.default',
+        color: 'primary.light',
         width: 'fit-content',
         marginBottom: 2,
         borderRadius: 2,
@@ -46,8 +46,8 @@ export const Tools = ({ tool, setTool }: IProps) => {
             height: 40,
             width: 40,
             borderRadius: 1,
-            bgcolor: item === tool ? 'mintcream' : undefined,
-            color: item === tool ? 'black' : undefined,
+            bgcolor: item === tool ? 'primary.main' : undefined,
+            color: item === tool ? 'white' : undefined,
           }}
         >
           {toolIcon[item]}

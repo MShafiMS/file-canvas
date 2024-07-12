@@ -1,31 +1,52 @@
-import { templates } from '@constant';
-import { Box, ButtonBase, Grid, Typography } from '@mui/material';
+import { FullScreenLoader } from '@components/core';
+import {
+  Box,
+  ButtonBase,
+  Grid,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+} from '@mui/material';
 import { grey } from '@mui/material/colors';
-import { Plus } from '@phosphor-icons/react';
-import { Template } from '@types';
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { File, Plus, Trash } from '@phosphor-icons/react';
+import { useStores } from '@stores';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 import { CanvasDialog } from './components/CanvasDialog';
 
-const newTemplate: Template = {
-  _id: uuidv4(),
-  title: 'Untitled',
-  elements: [],
-};
-
-export const DrawingsModule = () => {
+export const DrawingsModule = observer(() => {
   const [open, setOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template>(newTemplate);
 
-  const handleClickOpen = (template?: Template) => {
+  const { sketchStore } = useStores();
+  const {
+    sketches,
+    selectedSketch,
+    createSketch,
+    setSelectedSketchId,
+    templates,
+    deleteSketch,
+    loadSketches,
+    isLoading,
+  } = sketchStore;
+
+  const handleClickOpen = (id: string) => {
     setOpen(true);
-    if (template) setSelectedTemplate(template);
-    else setSelectedTemplate(newTemplate);
+    setSelectedSketchId(id);
   };
 
   const handleClose = () => {
     setOpen(false);
   };
+
+  useEffect(() => {
+    loadSketches();
+  }, []);
+
+  if (isLoading) return <FullScreenLoader />;
   return (
     <Box sx={{ margin: 2 }}>
       <Typography paddingX={1} display="block" variant="h6" marginBottom={1}>
@@ -35,7 +56,7 @@ export const DrawingsModule = () => {
         <Grid item sm={6} md={2}>
           <Box>
             <ButtonBase
-              onClick={() => handleClickOpen()}
+              onClick={() => handleClickOpen(createSketch()._id)}
               sx={{
                 width: '100%',
                 height: 200,
@@ -56,7 +77,7 @@ export const DrawingsModule = () => {
           <Grid key={template._id} item sm={6} md={2}>
             <Box>
               <ButtonBase
-                onClick={() => handleClickOpen(template as Template)}
+                onClick={() => handleClickOpen(template._id)}
                 sx={{
                   width: '100%',
                   height: 200,
@@ -66,7 +87,7 @@ export const DrawingsModule = () => {
                   borderColor: grey[300],
                 }}
               >
-                <img src={template.img} style={{ width: '100%', height: 'auto' }} alt="" />
+                {/* <img src={template.img} style={{ width: '100%', height: 'auto' }} alt="" /> */}
                 {/* <Plus weight="bold" size={44} color="#405D72" /> */}
               </ButtonBase>
 
@@ -77,7 +98,34 @@ export const DrawingsModule = () => {
           </Grid>
         ))}
       </Grid>
-      <CanvasDialog open={open} onClose={handleClose} template={selectedTemplate} />
+      {sketches.length > 0 && (
+        <Box sx={{ marginTop: 2 }}>
+          <Typography paddingX={1} display="block" variant="h6" marginBottom={1}>
+            Drawings
+          </Typography>
+          <List>
+            {sketches.map((sketch) => (
+              <ListItem key={sketch._id} disablePadding>
+                <ListItemButton onClick={() => handleClickOpen(sketch._id)}>
+                  <ListItemIcon>
+                    <File />
+                  </ListItemIcon>
+                  <ListItemText primary={sketch.title} />
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSketch(sketch._id);
+                    }}
+                  >
+                    <Trash />
+                  </IconButton>
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      )}
+      {selectedSketch && <CanvasDialog open={open} onClose={handleClose} template={selectedSketch} />}
     </Box>
   );
-};
+});

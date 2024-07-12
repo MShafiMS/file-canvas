@@ -1,8 +1,10 @@
-import { Tool } from '@enums';
+import { Theme, Tool } from '@enums';
 import { useHistory, usePressedKeys } from '@hooks';
 import useCanvasEvents from '@hooks/useCanvasEvents';
-import { Box, Button, ButtonGroup } from '@mui/material';
-import { ElementAttributes, ElementData, Template } from '@types';
+import { Box, Button, ButtonGroup, useTheme } from '@mui/material';
+import { grey } from '@mui/material/colors';
+import { ISketch } from '@stores';
+import { ElementAttributes, ElementData } from '@types';
 import { FocusEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import rough from 'roughjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,7 +26,10 @@ import { Tools } from './Tools';
 
 type Action = 'moving' | 'resizing' | 'drawing' | 'writing' | 'erasing' | 'panning' | 'none';
 
-export const Canvas = ({ onClose, template }: { onClose: () => void; template: Template }) => {
+export const Canvas = ({ onClose, template }: { onClose: () => void; template: ISketch }) => {
+  const {
+    palette: { mode },
+  } = useTheme();
   const { elements, setElements, undo, redo, reset, removeById, changeDirection } = useHistory(template.elements);
   const pressedKeys = usePressedKeys();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -50,10 +55,13 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: T
     context.save();
     context.translate(panOffset.x, panOffset.y);
     const roughCanvas = rough.canvas(canvas);
-    [...elements].reverse().forEach((element) => {
-      if (action === 'writing' && selectedElement?.id === element.id) return;
-      drawElement(roughCanvas, context, element);
-    });
+    if (elements) {
+      elements.forEach((element) => {
+        // Draw elements in their original order
+        if (action === 'writing' && selectedElement?.id === element.id) return;
+        drawElement(roughCanvas, context, element);
+      });
+    }
     context.restore();
   }, [elements, action, selectedElement, panOffset]);
 
@@ -151,7 +159,6 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: T
             setSelectedElement({ ...element, offsetX, offsetY });
           }
           setElements((prevState) => prevState);
-
           if (element.position === 'inside') {
             setAction('moving');
           } else {
@@ -160,7 +167,7 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: T
         }
       } else {
         const element = createElement(uuidv4(), clientX, clientY, clientX, clientY, tool, attributes); // putting attributes while creating
-        setElements((prevState) => [...prevState, element]);
+        setElements((prevState) => [...prevState, element]); // Ensure new element is at the end of the array
         setSelectedElement(element);
 
         setAction(tool === Tool.TEXT ? 'writing' : 'drawing');
@@ -303,14 +310,23 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: T
     onDrawEnd: handleMouseUp,
   });
 
+  const handleSave = async (title?: string) => {
+    await template.insertElements(elements, title);
+  };
+
   return (
     <>
-      <Header title={template.title} onClose={onClose} />
-      <Box sx={{ position: 'relative', height: '100vh' }}>
-        <CanvasMenu reset={reset} saveAsImage={exportToImage} />
+      <Header
+        title={template.title}
+        onClose={onClose}
+        showWarn={JSON.stringify(elements) !== JSON.stringify(template.elements)}
+        handleSave={handleSave}
+      />
+      <Box sx={{ position: 'relative', height: '100vh', bgcolor: mode === Theme.LIGHT ? grey[100] : grey[800] }}>
+        <CanvasMenu reset={reset} saveAsImage={exportToImage} handleSave={handleSave} />
         <Tools setTool={setTool} tool={tool} />
         <Panel attributes={attributes} setAttributes={(a) => setAttributes(a)} />
-        {elements.length > 0 && (
+        {elements && elements.length > 0 && (
           <Layers
             elements={elements}
             removeElement={removeById}
@@ -351,7 +367,7 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: T
             }}
           />
         ) : null}
-        <canvas id="canvas" ref={canvasRef} style={{ background: 'white', position: 'fixed', color: 'black' }} />
+        <canvas id="canvas" ref={canvasRef} style={{ position: 'fixed', color: 'black' }} />
       </Box>
     </>
   );

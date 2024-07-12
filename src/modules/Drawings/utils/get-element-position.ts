@@ -55,7 +55,8 @@ const positionWithinElement = (x: number, y: number, element: ElementData) => {
 };
 
 export const getElementAtPosition = (x: number, y: number, elements: ElementData[]) => {
-  return elements
+  return [...elements]
+    .reverse()
     .map((element) => ({ ...element, position: positionWithinElement(x, y, element) }))
     .find((element) => element.position !== null);
 };

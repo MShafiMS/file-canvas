@@ -14,3 +14,20 @@ export enum STROKE {
   REGULAR = 'REGULAR',
   BOLD = 'BOLD',
 }
+
+export enum STROKESTYLE {
+  SOLID = 'SOLID',
+  DASHED = 'DASHED',
+  DOTTED = 'DOTTED',
+}
+
+export enum COLLABORATOR {
+  ADMIN = 'ADMIN',
+  EDITOR = 'EDITOR',
+  VIEWER = 'VIEWER',
+}
+
+export enum PRIVACY {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+}

@@ -7,6 +7,7 @@ import { createTheme, PaletteMode, useMediaQuery } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { Store } from '@services';
 import '@styles/globals.scss';
+import { observer } from 'mobx-react-lite';
 import { NextPage } from 'next';
 import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
@@ -22,9 +23,9 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
-export default function App({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) {
+const App = observer(({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const { route, push, isReady } = useRouter();
+  const { isReady } = useRouter();
   const { layout } = Component;
 
   const [mode, setMode] = useState<PaletteMode>();
@@ -83,4 +84,6 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
       </ColorModeContext.Provider>
     </ErrorBoundary>
   );
-}
+});
+
+export default App;

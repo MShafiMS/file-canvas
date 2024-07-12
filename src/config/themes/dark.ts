@@ -1,14 +1,14 @@
 import { PaletteOptions } from '@mui/material';
-import { grey } from '@mui/material/colors';
 
 export const dark: PaletteOptions = {
   background: {
-    default: grey[900],
-    paper: grey[700],
+    default: '#090A0B',
+    paper: '#202427',
   },
   primary: {
-    main: '#FFFFFF',
-    light: '#000000',
-    dark: '#FFFFFF',
+    main: '#635BFF',
+    light: '#FFFFFF',
+    dark: '#000000',
   },
+  divider: '#32383e',
 };

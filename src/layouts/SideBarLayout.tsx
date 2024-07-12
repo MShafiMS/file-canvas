@@ -1,10 +1,9 @@
+import { FullScreenLoader } from '@components/core';
 import { AccountMenu, ToggleTheme } from '@components/header';
 import { getRouteLabel, navList } from '@constant/nav-list';
-import MenuIcon from '@mui/icons-material/Menu';
 import { ListSubheader, Typography, useMediaQuery } from '@mui/material';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import MuiDrawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -13,13 +12,17 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
+import { grey } from '@mui/material/colors';
 import { CSSObject, Theme, styled, useTheme } from '@mui/material/styles';
+import { List as MenuIcon } from '@phosphor-icons/react';
+import { useStores } from '@stores';
+import { observer } from 'mobx-react-lite';
 import { signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ReactNode, useEffect, useState } from 'react';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -27,6 +30,7 @@ const openedMixin = (theme: Theme): CSSObject => ({
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
+  border: 'none',
   overflowX: 'hidden',
 });
 
@@ -98,14 +102,14 @@ interface IProps {
   children: ReactNode;
 }
 
-export const SidebarLayout = ({ children }: IProps) => {
+export const SidebarLayout = observer(({ children }: IProps) => {
+  const { userStore } = useStores();
+  const { loadLoggedInUser, loggedInUser } = userStore;
   const { status, data } = useSession();
   const theme = useTheme();
   const isLargeDevice = useMediaQuery(theme.breakpoints.up('sm'));
   const [open, setOpen] = useState(isLargeDevice);
   const { route, push } = useRouter();
-
-  console.log(data);
 
   const isSelected = (menuRoute: string): boolean => {
     return route === menuRoute;
@@ -118,14 +122,16 @@ export const SidebarLayout = ({ children }: IProps) => {
   useEffect(() => {
     if (status === 'unauthenticated') {
       signIn();
+    } else if (data?.user) {
+      loadLoggedInUser(data.user);
     }
-  }, [status]);
+  }, [status, data]);
 
-  console.log(status);
+  if (!loggedInUser) return <FullScreenLoader />;
 
   const DrawerChild = () => {
     return (
-      <Box sx={{ height: '100vh', bgcolor: 'background.default' }}>
+      <Box sx={{ height: '100vh', bgcolor: 'background.paper' }}>
         <Toolbar
           sx={{
             display: 'flex',
@@ -139,58 +145,83 @@ export const SidebarLayout = ({ children }: IProps) => {
               <img src="/images/logo.svg" alt="logo" width={140} />
             </Link>
           </DrawerHeader>
-          <IconButton onClick={handleDrawerClick}>
+          <IconButton sx={{ color: grey[200] }} onClick={handleDrawerClick}>
             <MenuIcon />
           </IconButton>
         </Toolbar>
-        <Divider />
-        {navList.map((listItem, index) => (
-          <List
-            key={index}
-            component="nav"
-            saria-labelledby="nested-list-subheader"
-            disablePadding
-            subheader={
-              listItem.subHeader && (
-                <ListSubheader sx={{ bgcolor: 'background.default' }} component="div" id="nested-list-subheader">
-                  {listItem.subHeader}
-                </ListSubheader>
-              )
-            }
-          >
-            {listItem.menus.map((menu) => (
-              <Link href={menu.route} key={menu.label} style={{ textDecoration: 'none' }}>
-                <ListItem selected={isSelected(menu.route)} disablePadding sx={{ display: 'block' }}>
-                  <ListItemButton
+        <Box sx={{ marginTop: 4 }}>
+          {navList.map((listItem, index) => (
+            <List
+              key={index}
+              component="nav"
+              saria-labelledby="nested-list-subheader"
+              disablePadding
+              sx={{ paddingX: 2 }}
+              subheader={
+                listItem.subHeader &&
+                open && (
+                  <ListSubheader
+                    sx={{ bgcolor: 'background.paper', color: grey[400] }}
+                    component="div"
+                    id="nested-list-subheader"
+                  >
+                    {listItem.subHeader}
+                  </ListSubheader>
+                )
+              }
+            >
+              {listItem.menus.map((menu) => (
+                <Link href={menu.route} key={menu.label} style={{ textDecoration: 'none' }}>
+                  <ListItem
+                    selected={isSelected(menu.route)}
+                    disablePadding
                     sx={{
-                      minHeight: 48,
-                      justifyContent: open ? 'initial' : 'center',
-                      px: 2.5,
+                      display: 'block',
+                      borderRadius: 2,
+                      '&.Mui-selected': {
+                        backgroundColor: 'primary.main',
+                        color: 'primary.dark',
+                      },
+                      color: grey[300],
                     }}
                   >
-                    <ListItemIcon
+                    <ListItemButton
                       sx={{
-                        minWidth: 0,
-                        mr: open ? 3 : 'auto',
-                        justifyContent: 'center',
+                        py: 0.5,
+                        borderRadius: 2,
+                        justifyContent: open ? 'initial' : 'center',
+                        px: 2.5,
                       }}
                     >
-                      <menu.icon />
-                    </ListItemIcon>
-                    <ListItemText primary={menu.label} sx={{ opacity: open ? 1 : 0, color: 'primary.main' }} />
-                  </ListItemButton>
-                </ListItem>
-              </Link>
-            ))}
-          </List>
-        ))}
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : 'auto',
+                          justifyContent: 'center',
+                          color: 'inherit',
+                        }}
+                      >
+                        {menu.icon}
+                      </ListItemIcon>
+                      <ListItemText primary={menu.label} sx={{ opacity: open ? 1 : 0, fontWeight: 600 }} />
+                    </ListItemButton>
+                  </ListItem>
+                </Link>
+              ))}
+            </List>
+          ))}
+        </Box>
       </Box>
     );
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar position="fixed" open={open} sx={{ boxShadow: 'none' }} color="default">
+      <AppBar
+        position="fixed"
+        open={open}
+        sx={{ boxShadow: 'none', bgcolor: 'background.default', borderBottom: 1, borderBottomColor: 'divider' }}
+      >
         <Toolbar>
           <IconButton
             size="medium"
@@ -201,11 +232,17 @@ export const SidebarLayout = ({ children }: IProps) => {
             sx={{
               marginRight: 2,
               ...(open && { display: 'none' }),
+              color: 'primary.light',
             }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }, color: 'primary.light' }}
+          >
             {getRouteLabel(route)}
           </Typography>
           <ToggleTheme />
@@ -239,7 +276,7 @@ export const SidebarLayout = ({ children }: IProps) => {
           maxHeight: '100vh',
           overflowY: 'auto',
           bgcolor: 'background.default',
-          color: 'primary.main',
+          color: 'primary.light',
           marginTop: 8,
         }}
       >
@@ -248,4 +285,4 @@ export const SidebarLayout = ({ children }: IProps) => {
       </Box>
     </Box>
   );
-};
+});

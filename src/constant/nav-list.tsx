@@ -1,19 +1,20 @@
 import {
-  ContactSupport,
-  Dashboard,
-  Draw,
-  Extension,
-  Folder,
-  Groups,
-  Settings,
-  Tune,
-  ViewCarousel,
-} from '@mui/icons-material';
+  Faders,
+  FolderSimple,
+  GearSix,
+  House,
+  PaintBrush,
+  Question,
+  Slideshow,
+  Users,
+  Wrench,
+} from '@phosphor-icons/react';
+import { ReactNode } from 'react';
 
 interface ISidebarMenu {
   label: string;
   route: string;
-  icon: any;
+  icon: ReactNode;
   submenus?: ISidebarMenu[];
   isOpenInNewTab?: boolean;
 }
@@ -27,19 +28,14 @@ export const navList: ISidebarNavList[] = [
   {
     menus: [
       {
-        label: 'Dashboard',
-        route: '/dashboard',
-        icon: Dashboard,
+        label: 'Overview',
+        route: '/overview',
+        icon: <House weight="fill" />,
       },
       {
         label: 'Files',
         route: '/files',
-        icon: Folder,
-      },
-      {
-        label: 'Drawings',
-        route: '/drawings',
-        icon: Draw,
+        icon: <FolderSimple weight="fill" />,
       },
     ],
   },
@@ -47,14 +43,19 @@ export const navList: ISidebarNavList[] = [
     subHeader: 'Editing',
     menus: [
       {
-        label: 'Collaborators',
-        route: '/collaborators',
-        icon: Groups,
+        label: 'Drawings',
+        route: '/drawings',
+        icon: <PaintBrush weight="fill" />,
       },
       {
         label: 'Templates',
         route: '/templates',
-        icon: ViewCarousel,
+        icon: <Slideshow weight="fill" />,
+      },
+      {
+        label: 'Collaborators',
+        route: '/collaborators',
+        icon: <Users weight="fill" />,
       },
     ],
   },
@@ -64,12 +65,12 @@ export const navList: ISidebarNavList[] = [
       {
         label: 'Settings',
         route: '/settings',
-        icon: Settings,
+        icon: <GearSix weight="fill" />,
       },
       {
         label: 'Customize UI',
         route: '/customize-ui',
-        icon: Tune,
+        icon: <Faders weight="fill" />,
       },
     ],
   },
@@ -79,12 +80,12 @@ export const navList: ISidebarNavList[] = [
       {
         label: 'Plugins',
         route: '/plugins',
-        icon: Extension,
+        icon: <Wrench weight="fill" />,
       },
       {
         label: 'Support',
         route: 'https://ablespace.io',
-        icon: ContactSupport,
+        icon: <Question weight="fill" />,
       },
     ],
   },

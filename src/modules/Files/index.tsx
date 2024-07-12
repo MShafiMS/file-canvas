@@ -1,17 +1,6 @@
 import { CloudUpload, Search } from '@mui/icons-material';
-import {
-  Box,
-  Button,
-  FormControl,
-  Grid,
-  IconButton,
-  InputBase,
-  InputLabel,
-  MenuItem,
-  Select,
-  styled,
-} from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Box, Button, Grid, IconButton, InputBase, styled } from '@mui/material';
+import { useState } from 'react';
 import { FileCard } from './components/FileCard';
 
 interface IImage {
@@ -38,13 +27,6 @@ const VisuallyHiddenInput = styled('input')({
 export const FilesModule = () => {
   const [imageList, setImageList] = useState<IImage[]>([]);
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      const response = await fetch('https://picsum.photos/v2/list', { method: 'GET' }).then((res) => res.json());
-      setImageList(response);
-    };
-    fetchImages();
-  }, []);
   return (
     <div>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, marginY: 2 }}>
@@ -52,7 +34,7 @@ export const FilesModule = () => {
           sx={{
             width: '60%',
             display: 'flex',
-            bgcolor: 'background.paper',
+            bgcolor: 'divider',
             borderRadius: 2,
           }}
         >
@@ -76,65 +58,6 @@ export const FilesModule = () => {
           Upload file
           <VisuallyHiddenInput type="file" />
         </Button>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'center', marginY: 1 }}>
-        <FormControl sx={{ m: 1, minWidth: 80 }}>
-          <InputLabel id="demo-simple-select-autowidth-label">Age</InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            // value={age}
-            // onChange={handleChange}
-            autoWidth
-            size="small"
-            label="Age"
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={21}>Twenty one</MenuItem>
-            <MenuItem value={22}>Twenty one and a half</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1, minWidth: 80 }}>
-          <InputLabel id="demo-simple-select-autowidth-label">Age</InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            // value={age}
-            // onChange={handleChange}
-            autoWidth
-            size="small"
-            label="Age"
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={21}>Twenty one</MenuItem>
-            <MenuItem value={22}>Twenty one and a half</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1, minWidth: 80 }}>
-          <InputLabel id="demo-simple-select-autowidth-label">Age</InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            // value={age}
-            // onChange={handleChange}
-            autoWidth
-            size="small"
-            label="Age"
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={21}>Twenty one</MenuItem>
-            <MenuItem value={22}>Twenty one and a half</MenuItem>
-          </Select>
-        </FormControl>
       </Box>
       <Grid container gap={3} justifyContent="center">
         {imageList.map((image) => (

@@ -58,44 +58,47 @@ export const Layers = ({ elements, removeElement, selectedElement, changeDirecti
         component="nav"
         dense
       >
-        {elements.map((element, index) => (
-          <>
-            <Divider component="li" sx={{ borderColor: '#0000001f' }} />
-            <ListItem key={element.id} sx={{ bgcolor: selectedElement?.id === element.id ? 'aliceblue' : undefined }}>
-              {icons[element.type]}
-              <ListItemText primary={`# ${labels[element.type]} ${index}`} />
-              {index > 0 && (
+        {elements
+          .slice()
+          .reverse()
+          .map((element, index) => (
+            <>
+              <Divider component="li" sx={{ borderColor: 'divider' }} />
+              <ListItem key={element.id} sx={{ bgcolor: selectedElement?.id === element.id ? 'divider' : undefined }}>
+                {icons[element.type]}
+                <ListItemText sx={{ marginLeft: 1 }} primary={labels[element.type]} />
+                {index > 0 && (
+                  <IconButton
+                    onClick={() => changeDirection(element.id, 'forward')}
+                    color="inherit"
+                    size="small"
+                    edge="end"
+                  >
+                    <ArrowUp color="black" />
+                  </IconButton>
+                )}
+                {index + 1 !== elements.length && (
+                  <IconButton
+                    onClick={() => changeDirection(element.id, 'backward')}
+                    color="inherit"
+                    size="small"
+                    edge="end"
+                  >
+                    <ArrowDown color="black" />
+                  </IconButton>
+                )}
                 <IconButton
-                  onClick={() => changeDirection(element.id, 'forward')}
-                  color="inherit"
+                  onClick={() => removeElement(element.id)}
+                  color="error"
                   size="small"
                   edge="end"
+                  aria-label="delete"
                 >
-                  <ArrowUp color="black" />
+                  <Delete fontSize="small" />
                 </IconButton>
-              )}
-              {index + 1 !== elements.length && (
-                <IconButton
-                  onClick={() => changeDirection(element.id, 'backward')}
-                  color="inherit"
-                  size="small"
-                  edge="end"
-                >
-                  <ArrowDown color="black" />
-                </IconButton>
-              )}
-              <IconButton
-                onClick={() => removeElement(element.id)}
-                color="error"
-                size="small"
-                edge="end"
-                aria-label="delete"
-              >
-                <Delete fontSize="small" />
-              </IconButton>
-            </ListItem>
-          </>
-        ))}
+              </ListItem>
+            </>
+          ))}
       </List>
     </Paper>
   );
