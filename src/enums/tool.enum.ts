@@ -8,3 +8,9 @@ export enum Tool {
   CIRCLE = 'CIRCLE',
   TEXT = 'TEXT',
 }
+
+export enum STROKE {
+  THIN = 'THIN',
+  REGULAR = 'REGULAR',
+  BOLD = 'BOLD',
+}

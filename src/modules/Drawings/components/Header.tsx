@@ -1,36 +1,66 @@
-import CloseIcon from '@mui/icons-material/Close';
-import { AppBar, Button, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Toolbar, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { useState } from 'react';
 
 type Props = {
   onClose: () => void;
-  undo: () => void;
-  redo: () => void;
-  reset: () => void;
-  save: () => void;
+  title: string;
 };
 
-export const Header = ({ onClose, undo, redo, reset, save }: Props) => {
+export const Header = ({ title, onClose }: Props) => {
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
   return (
-    <AppBar sx={{ position: 'relative' }}>
+    <AppBar sx={{ position: 'relative' }} color="default">
       <Toolbar>
-        <IconButton edge="start" color="inherit" onClick={onClose} aria-label="close">
-          <CloseIcon />
-        </IconButton>
         <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-          Draw
+          {title}
         </Typography>
-        <Button variant="outlined" sx={{ marginRight: 1 }} size="small" onClick={undo}>
-          Undo
+        <Button variant="text" onClick={handleClickOpen}>
+          Close
         </Button>
-        <Button variant="outlined" sx={{ marginRight: 1 }} size="small" onClick={redo}>
-          Redo
-        </Button>
-        <Button variant="outlined" color="warning" sx={{ marginRight: 1 }} size="small" onClick={reset}>
-          Reset
-        </Button>
-        <Button autoFocus color="inherit" onClick={save}>
-          save
-        </Button>
+
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          PaperProps={{ sx: { bgcolor: 'background.paper' } }}
+        >
+          <DialogTitle id="alert-dialog-title">{'Discard Sketch?'}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to discard your current sketch? Any unsaved changes will be lost. This action cannot
+              be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button
+              onClick={() => {
+                handleClose();
+                onClose();
+              }}
+              variant="contained"
+              color="warning"
+              autoFocus
+            >
+              Discard
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Toolbar>
     </AppBar>
   );

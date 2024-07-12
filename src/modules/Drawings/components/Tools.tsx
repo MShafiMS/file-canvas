@@ -22,19 +22,25 @@ export const Tools = ({ tool, setTool }: IProps) => {
   return (
     <Box
       sx={{
-        padding: 2,
-        bgcolor: 'background.paper',
+        position: 'absolute',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        top: 16,
+        zIndex: 10,
+        paddingX: 2,
+        paddingY: 1,
+        bgcolor: 'slategray',
         color: 'primary.dark',
-        width: 120,
-        height: 'fit-content',
+        width: 'fit-content',
+        marginBottom: 2,
+        borderRadius: 2,
         display: 'flex',
-        flexWrap: 'wrap',
         gap: 1,
-        borderRadius: 1,
       }}
     >
       {Object.values(Tool).map((item) => (
         <ButtonBase
+          key={item}
           onClick={() => setTool(item)}
           sx={{
             height: 40,

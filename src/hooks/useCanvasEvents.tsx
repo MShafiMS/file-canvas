@@ -1,12 +1,14 @@
 import { RefObject, useEffect } from 'react';
 
-const useCanvasEvents = (
-  canvasRef: RefObject<HTMLCanvasElement>,
-  panOffset: { x: number; y: number },
-  onDrawStart: (x: number, y: number) => void,
-  onDrawing: (x: number, y: number) => void,
-  onDrawEnd: (x: number, y: number) => void,
-) => {
+type CanvasData = {
+  canvasRef: RefObject<HTMLCanvasElement>;
+  panOffset: { x: number; y: number };
+  onDrawStart: (x: number, y: number) => void;
+  onDrawing: (x: number, y: number) => void;
+  onDrawEnd: (x: number, y: number) => void;
+};
+
+const useCanvasEvents = ({ canvasRef, panOffset, onDrawStart, onDrawing, onDrawEnd }: CanvasData) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;

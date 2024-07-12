@@ -1,117 +1,48 @@
 import { Tool } from '@enums';
 import { useHistory, usePressedKeys } from '@hooks';
 import useCanvasEvents from '@hooks/useCanvasEvents';
-import { Box, InputBase } from '@mui/material';
-import { ElementData } from '@types';
-import getStroke from 'perfect-freehand';
-import React, { FocusEvent, useEffect, useLayoutEffect, useState } from 'react';
+import { Box, Button, ButtonGroup } from '@mui/material';
+import { ElementAttributes, ElementData, Template } from '@types';
+import { FocusEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import rough from 'roughjs';
-import { RoughCanvas } from 'roughjs/bin/canvas';
-import { cursorForPosition, getElementAtPosition } from '../utils';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  adjustElementCoordinates,
+  adjustmentRequired,
+  createElement,
+  cursorForPosition,
+  defaultAttributes,
+  drawElement,
+  getElementAtPosition,
+  resizedCoordinates,
+} from '../utils';
+import { CanvasMenu } from './CanvasMenu';
 import { Header } from './Header';
+import { Layers } from './Layers';
+import { Panel } from './Panel';
 import { Tools } from './Tools';
 
-const createElement = (id: number, x1: number, y1: number, x2: number, y2: number, type: Tool): ElementData => {
-  const generator = rough.generator();
-  let element;
-  switch (type) {
-    case Tool.RECT:
-      element = generator.rectangle(x1, y1, x2 - x1, y2 - y1, { roughness: 0 });
-      break;
-    case Tool.CIRCLE:
-      const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-      element = generator.circle(x1, y1, radius * 2, { roughness: 0 });
-      break;
-    case Tool.PENCIL:
-      return { id, x1, y1, x2, y2, type, points: [{ x: x1, y: y1 }] };
-    case Tool.LINE:
-      element = generator.line(x1, y1, x2, y2, { roughness: 0 });
-      break;
-  }
-  return { id, x1, y1, x2, y2, roughElement: element, type };
-};
+type Action = 'moving' | 'resizing' | 'drawing' | 'writing' | 'erasing' | 'panning' | 'none';
 
-const getSvgPathFromStroke = (stroke: number[][]) => {
-  if (!stroke.length) return '';
-
-  const d = stroke.reduce(
-    (acc, [x0, y0], i, arr) => {
-      const [x1, y1] = arr[(i + 1) % arr.length];
-      acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-      return acc;
-    },
-    ['M', ...stroke[0], 'Q'],
-  );
-
-  d.push('Z');
-  return d.join(' ');
-};
-
-const drawElement = (
-  roughCanvas: RoughCanvas,
-  context: CanvasRenderingContext2D,
-  element: ElementData,
-  color: string,
-) => {
-  switch (element.type) {
-    case Tool.LINE:
-    case Tool.RECT:
-    case Tool.CIRCLE:
-      if (element.roughElement) roughCanvas.draw(element.roughElement);
-      break;
-    case Tool.PENCIL:
-      const penStroke = element.points ? getSvgPathFromStroke(getStroke(element.points, { size: 4 })) : undefined;
-      context.fillStyle = color;
-      context.fill(new Path2D(penStroke));
-      break;
-    case Tool.ERASER:
-      const stroke = element.points ? getSvgPathFromStroke(getStroke(element.points, { size: 16 })) : undefined;
-      context.fill(new Path2D(stroke));
-      break;
-    case Tool.TEXT:
-      context.textBaseline = 'top';
-      context.font = '24px sans-serif';
-      context.fillText(element.text || '', element.x1, element.y1);
-      break;
-  }
-};
-
-const adjustmentRequired = (type: Tool) => [Tool.LINE, Tool.RECT].includes(type);
-
-const adjustElementCoordinates = (element: ElementData) => {
-  const { type, x1, y1, x2, y2 } = element;
-  if (type === Tool.RECT) {
-    const minX = Math.min(x1, x2);
-    const maxX = Math.max(x1, x2);
-    const minY = Math.min(y1, y2);
-    const maxY = Math.max(y1, y2);
-    return { x1: minX, y1: minY, x2: maxX, y2: maxY };
-  } else {
-    if (x1 < x2 || (x1 === x2 && y1 < y2)) {
-      return { x1, y1, x2, y2 };
-    } else {
-      return { x1: x2, y1: y2, x2: x1, y2: y1 };
-    }
-  }
-};
-
-type Action = 'moving' | 'drawing' | 'writing' | 'erasing' | 'panning' | 'none';
-
-export const Canvas = ({ onClose }: { onClose: () => void }) => {
-  const { elements, setElements, undo, redo, reset, removeById } = useHistory([]);
+export const Canvas = ({ onClose, template }: { onClose: () => void; template: Template }) => {
+  const { elements, setElements, undo, redo, reset, removeById, changeDirection } = useHistory(template.elements);
   const pressedKeys = usePressedKeys();
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-  const textAreaRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const [tool, setTool] = React.useState<Tool>(Tool.PENCIL);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [tool, setTool] = useState<Tool>(Tool.PENCIL);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [selectedElement, setSelectedElement] = useState<ElementData | null>(null);
   const [action, setAction] = useState<Action>('none');
   const [startPanMousePosition, setStartPanMousePosition] = useState({ x: 0, y: 0 });
-  const [color, setColor] = useState('#000');
+  const [attributes, setAttributes] = useState<ElementAttributes>(defaultAttributes);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
     const context = canvas.getContext('2d');
     if (!context) return;
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -119,9 +50,9 @@ export const Canvas = ({ onClose }: { onClose: () => void }) => {
     context.save();
     context.translate(panOffset.x, panOffset.y);
     const roughCanvas = rough.canvas(canvas);
-    elements.forEach((element) => {
+    [...elements].reverse().forEach((element) => {
       if (action === 'writing' && selectedElement?.id === element.id) return;
-      drawElement(roughCanvas, context, element, color);
+      drawElement(roughCanvas, context, element);
     });
     context.restore();
   }, [elements, action, selectedElement, panOffset]);
@@ -150,187 +81,209 @@ export const Canvas = ({ onClose }: { onClose: () => void }) => {
     }
   }, [action, selectedElement]);
 
-  const updateElement = (
-    id: number,
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-    type: Tool,
-    options?: { text?: string },
-  ) => {
-    const elementsCopy = [...elements];
-
-    switch (type) {
-      case Tool.LINE:
-      case Tool.RECT:
-      case Tool.CIRCLE:
-        elementsCopy[id] = createElement(id, x1, y1, x2, y2, type);
-        break;
-      case Tool.PENCIL:
-      case Tool.ERASER:
-        elementsCopy[id].points = elementsCopy[id].points
-          ? [...elementsCopy[id].points, { x: x2, y: y2 }]
-          : [{ x: x2, y: y2 }];
-        break;
-      case Tool.TEXT:
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const context = canvas.getContext('2d');
-        if (!context || !options?.text) return;
-        const textWidth = context.measureText(options?.text).width;
-        const textHeight = 24;
-        elementsCopy[id] = {
-          ...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type),
-          text: options?.text,
-        };
-        break;
-    }
-
-    setElements(elementsCopy, true);
-  };
-
-  const handleMouseDown = (clientX: number, clientY: number) => {
-    if (action === 'writing') return;
-    if (tool === Tool.DRAG || pressedKeys.has(' ')) {
-      setAction('panning');
-      setStartPanMousePosition({ x: clientX, y: clientY });
-      return;
-    }
-    if (tool === Tool.ERASER) {
-      setAction('erasing');
-    } else if (tool === Tool.DEFAULT) {
-      const element = getElementAtPosition(clientX, clientY, elements);
-      if (element) {
-        const { type, points } = element;
-        if (type === Tool.PENCIL) {
-          if (!points) return;
-
-          const xOffsets = points.map((point) => clientX - point.x);
-          const yOffsets = points.map((point) => clientY - point.y);
-          setSelectedElement({ ...element, xOffsets, yOffsets });
-        } else {
-          const offsetX = clientX - element.x1;
-          const offsetY = clientY - element.y1;
-          setSelectedElement({ ...element, offsetX, offsetY });
-        }
-        setElements((prevState) => prevState);
-
-        if (element.position === 'inside') {
-          setAction('moving');
-        }
+  const updateElement = useCallback(
+    (
+      id: string,
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      type: Tool,
+      attributes: ElementAttributes,
+      options?: { text?: string },
+    ) => {
+      const elementsCopy = [...elements];
+      const elementIndex = elementsCopy.findIndex((element) => element.id === id);
+      switch (type) {
+        case Tool.LINE:
+        case Tool.RECT:
+        case Tool.CIRCLE:
+          elementsCopy[elementIndex] = createElement(id, x1, y1, x2, y2, type, attributes);
+          break;
+        case Tool.PENCIL:
+        case Tool.ERASER:
+          elementsCopy[elementIndex].points = elementsCopy[elementIndex].points
+            ? [...elementsCopy[elementIndex].points, { x: x2, y: y2 }]
+            : [{ x: x2, y: y2 }];
+          break;
+        case Tool.TEXT:
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+          const context = canvas.getContext('2d');
+          if (!context || !options?.text) return;
+          const textWidth = context.measureText(options?.text).width;
+          const textHeight = 24;
+          elementsCopy[elementIndex] = {
+            ...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type, attributes),
+            text: options?.text,
+          };
+          break;
       }
-    } else {
-      const id = elements.length;
-      const element = createElement(id, clientX, clientY, clientX, clientY, tool);
-      setElements((prevState) => [...prevState, element]);
-      setSelectedElement(element);
 
-      setAction(tool === Tool.TEXT ? 'writing' : 'drawing');
-    }
-  };
+      setElements(elementsCopy, true);
+    },
+    [elements, setElements],
+  );
 
-  const handleMouseMove = (clientX: number, clientY: number) => {
-    if (action === 'panning') {
-      const deltaX = clientX - startPanMousePosition.x;
-      const deltaY = clientY - startPanMousePosition.y;
-      setPanOffset({
-        x: panOffset.x + deltaX,
-        y: panOffset.y + deltaY,
-      });
-    } else if (action === 'moving') {
-      if (!selectedElement) return;
-      const { id, x1, x2, y1, y2, type, points, xOffsets, yOffsets, offsetX, offsetY } = selectedElement;
-      if (type === Tool.PENCIL) {
-        if (!points || !xOffsets || !yOffsets) return;
-        const newPoints = points.map((_, index) => ({
-          x: clientX - xOffsets[index],
-          y: clientY - yOffsets[index],
-        }));
-        const elementsCopy = [...elements];
-        elementsCopy[id] = {
-          ...elementsCopy[id],
-          points: newPoints,
-        };
-        setElements(elementsCopy, true);
-      } else {
-        if (!offsetX || !offsetY) return;
-        const width = x2 - x1;
-        const height = y2 - y1;
-        const newX1 = clientX - offsetX;
-        const newY1 = clientY - offsetY;
-        const options = type === Tool.TEXT ? { text: selectedElement.text } : {};
-        updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type, options);
-      }
-    } else if (action === 'drawing') {
-      const index = elements.length - 1;
-      const { x1, y1 } = elements[index];
-      updateElement(index, x1, y1, clientX, clientY, tool);
-    } else if (action === 'erasing') {
-      const element = getElementAtPosition(clientX, clientY, elements);
-      if (element) removeById(element?.id);
-    }
-
-    if ([Tool.DEFAULT, Tool.DRAG].includes(tool)) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const element = getElementAtPosition(clientX, clientY, elements);
-      canvas.style.cursor =
-        action === 'panning'
-          ? 'grabbing'
-          : tool === Tool.DRAG
-          ? 'grab'
-          : element?.position
-          ? cursorForPosition(element.position)
-          : 'default';
-    } else {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      canvas.style.cursor = 'default';
-    }
-  };
-
-  const handleMouseUp = (clientX: number, clientY: number) => {
-    if (selectedElement) {
-      const { offsetX, offsetY, x1, y1, type, id } = selectedElement;
-      if (type === Tool.TEXT && offsetX && clientX - offsetX === x1 && offsetY && clientY - offsetY === y1) {
-        setAction('writing');
+  const handleMouseDown = useCallback(
+    (clientX: number, clientY: number) => {
+      if (action === 'writing') return;
+      if (tool === Tool.DRAG || pressedKeys.has(' ')) {
+        setAction('panning');
+        setStartPanMousePosition({ x: clientX, y: clientY });
         return;
       }
+      if (tool === Tool.ERASER) {
+        setAction('erasing');
+      } else if (tool === Tool.DEFAULT) {
+        const element = getElementAtPosition(clientX, clientY, elements);
+        if (element) {
+          const { type, points } = element;
+          if (type === Tool.PENCIL) {
+            if (!points) return;
 
-      const index = selectedElement.id;
-      const { id: idx, type: elmType } = elements[index];
-      if (action === 'drawing' && adjustmentRequired(elmType)) {
-        const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[idx]);
-        updateElement(id, x1, y1, x2, y2, type);
+            const xOffsets = points.map((point) => clientX - point.x);
+            const yOffsets = points.map((point) => clientY - point.y);
+            setSelectedElement({ ...element, xOffsets, yOffsets });
+          } else {
+            const offsetX = clientX - element.x1;
+            const offsetY = clientY - element.y1;
+            setSelectedElement({ ...element, offsetX, offsetY });
+          }
+          setElements((prevState) => prevState);
+
+          if (element.position === 'inside') {
+            setAction('moving');
+          } else {
+            setAction('resizing');
+          }
+        }
+      } else {
+        const element = createElement(uuidv4(), clientX, clientY, clientX, clientY, tool, attributes); // putting attributes while creating
+        setElements((prevState) => [...prevState, element]);
+        setSelectedElement(element);
+
+        setAction(tool === Tool.TEXT ? 'writing' : 'drawing');
       }
-    }
+    },
+    [action, tool, pressedKeys, elements, attributes, setElements],
+  );
 
-    if (action === 'writing') return;
+  const handleMouseMove = useCallback(
+    (clientX: number, clientY: number) => {
+      if (action === 'panning') {
+        const deltaX = clientX - startPanMousePosition.x;
+        const deltaY = clientY - startPanMousePosition.y;
+        setPanOffset({
+          x: panOffset.x + deltaX,
+          y: panOffset.y + deltaY,
+        });
+      } else if (action === 'moving') {
+        if (!selectedElement) return;
+        const { id, x1, x2, y1, y2, attributes, type, points, xOffsets, yOffsets, offsetX, offsetY } = selectedElement;
+        if (type === Tool.PENCIL) {
+          if (!points || !xOffsets || !yOffsets) return;
+          const newPoints = points.map((_, index) => ({
+            x: clientX - xOffsets[index],
+            y: clientY - yOffsets[index],
+          }));
+          const elementIndex = elements.findIndex((element) => element.id === id);
+          const elementsCopy = [...elements];
+          elementsCopy[elementIndex] = {
+            ...elementsCopy[elementIndex],
+            points: newPoints,
+          };
+          setElements(elementsCopy, true);
+        } else {
+          if (!offsetX || !offsetY) return;
+          const width = x2 - x1;
+          const height = y2 - y1;
+          const newX1 = clientX - offsetX;
+          const newY1 = clientY - offsetY;
+          const options = type === Tool.TEXT ? { text: selectedElement.text } : {};
+          updateElement(id, newX1, newY1, newX1 + width, newY1 + height, type, attributes, options);
+        }
+      } else if (action === 'drawing') {
+        const index = elements.length - 1;
+        const { x1, y1, attributes, id } = elements[index];
+        updateElement(id, x1, y1, clientX, clientY, tool, attributes);
+      } else if (action === 'erasing') {
+        const element = getElementAtPosition(clientX, clientY, elements);
+        if (element) removeById(element?.id);
+      } else if (action === 'resizing') {
+        if (!selectedElement) return;
+        const { id, type, attributes, position, ...coordinates } = selectedElement;
+        const elmData = resizedCoordinates(clientX, clientY, coordinates, position);
+        if (!elmData) return;
+        const { x1, y1, x2, y2 } = elmData;
+        updateElement(id, x1, y1, x2, y2, type, attributes);
+      }
 
-    setAction('none');
-    setSelectedElement(null);
-  };
+      if ([Tool.DEFAULT, Tool.DRAG].includes(tool)) {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const element = getElementAtPosition(clientX, clientY, elements);
+        canvas.style.cursor =
+          action === 'panning'
+            ? 'grabbing'
+            : tool === Tool.DRAG
+            ? 'grab'
+            : element?.position
+            ? cursorForPosition(element.position)
+            : 'default';
+      } else {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        canvas.style.cursor = 'default';
+      }
+    },
+    [action, tool, panOffset, startPanMousePosition, selectedElement, elements, setElements, removeById, updateElement],
+  );
 
-  useCanvasEvents(canvasRef, panOffset, handleMouseDown, handleMouseMove, handleMouseUp);
+  const handleMouseUp = useCallback(
+    (clientX: number, clientY: number) => {
+      if (selectedElement) {
+        const { offsetX, offsetY, x1, y1, type, id } = selectedElement;
+        if (type === Tool.TEXT && offsetX && clientX - offsetX === x1 && offsetY && clientY - offsetY === y1) {
+          setAction('writing');
+          return;
+        }
+        const elementIndex = elements.findIndex((element) => element.id === selectedElement.id);
+        const { type: elmType, attributes } = elements[elementIndex];
+        if ((action === 'drawing' || action === 'resizing') && adjustmentRequired(elmType)) {
+          const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[elementIndex]);
+          updateElement(id, x1, y1, x2, y2, type, attributes);
+        }
+      }
 
-  const handleBlur = (event: FocusEvent<HTMLTextAreaElement>) => {
-    setAction('none');
-    if (selectedElement) {
-      const { id, x1, y1, type } = selectedElement;
-      updateElement(id, x1, y1, 0, 0, type, { text: event.currentTarget.value });
-    }
-    setSelectedElement(null);
-  };
+      if (action === 'writing') return;
+
+      if ([Tool.CIRCLE, Tool.RECT].includes(tool)) setTool(Tool.DEFAULT);
+      setAction('none');
+      setSelectedElement(null);
+    },
+    [selectedElement, elements, updateElement],
+  );
+
+  const handleBlur = useCallback(
+    (event: FocusEvent<HTMLTextAreaElement>) => {
+      setAction('none');
+      if (selectedElement) {
+        const { id, x1, y1, type, attributes } = selectedElement;
+        updateElement(id, x1, y1, 0, 0, type, attributes, { text: event.currentTarget.value });
+      }
+      setSelectedElement(null);
+    },
+    [selectedElement, updateElement],
+  );
 
   const exportToImage = () => {
     const canvas = canvasRef.current;
     if (!canvas) return alert('Something went wrong');
-    const image = new Image();
     const dataURL = canvas.toDataURL('image/png');
     const downloadLink = document.createElement('a');
     downloadLink.href = dataURL;
-    downloadLink.download = 'fileName';
+    downloadLink.download = template.title;
 
     // Append the anchor element to the body
     document.body.appendChild(downloadLink);
@@ -342,14 +295,40 @@ export const Canvas = ({ onClose }: { onClose: () => void }) => {
     document.body.removeChild(downloadLink);
   };
 
+  useCanvasEvents({
+    canvasRef,
+    panOffset,
+    onDrawStart: handleMouseDown,
+    onDrawing: handleMouseMove,
+    onDrawEnd: handleMouseUp,
+  });
+
   return (
     <>
-      <Header onClose={onClose} undo={undo} redo={redo} reset={reset} save={exportToImage} />
-      <Box>
-        <Box sx={{ position: 'absolute', margin: 2, zIndex: 10 }}>
-          <Tools setTool={setTool} tool={tool} />
-          <InputBase type="color" onChange={(e) => setColor(e.currentTarget.value)} />
-        </Box>
+      <Header title={template.title} onClose={onClose} />
+      <Box sx={{ position: 'relative', height: '100vh' }}>
+        <CanvasMenu reset={reset} saveAsImage={exportToImage} />
+        <Tools setTool={setTool} tool={tool} />
+        <Panel attributes={attributes} setAttributes={(a) => setAttributes(a)} />
+        {elements.length > 0 && (
+          <Layers
+            elements={elements}
+            removeElement={removeById}
+            selectedElement={selectedElement}
+            changeDirection={changeDirection}
+          />
+        )}
+        <ButtonGroup
+          disableElevation
+          variant="contained"
+          size="small"
+          color="inherit"
+          aria-label="Disabled button group"
+          sx={{ position: 'absolute', zIndex: 10, bottom: 16, left: 16 }}
+        >
+          <Button onClick={undo}>Undo</Button>
+          <Button onClick={redo}>Redo</Button>
+        </ButtonGroup>
         {action === 'writing' && selectedElement ? (
           <textarea
             ref={textAreaRef}
@@ -359,6 +338,7 @@ export const Canvas = ({ onClose }: { onClose: () => void }) => {
               top: selectedElement.y1 - 2 + panOffset.y,
               left: selectedElement.x1 + panOffset.x,
               font: '24px sans-serif',
+              color: selectedElement.attributes.strokeColor,
               margin: 0,
               padding: 0,
               border: 0,
@@ -371,16 +351,7 @@ export const Canvas = ({ onClose }: { onClose: () => void }) => {
             }}
           />
         ) : null}
-        <canvas
-          id="canvas"
-          ref={canvasRef}
-          width={window.innerWidth}
-          height={window.innerHeight}
-          style={{ background: 'white', position: 'fixed', color: 'black' }}
-          // onMouseDown={handleMouseDown}
-          // onMouseMove={handleMouseMove}
-          // onMouseUp={handleMouseUp}
-        />
+        <canvas id="canvas" ref={canvasRef} style={{ background: 'white', position: 'fixed', color: 'black' }} />
       </Box>
     </>
   );

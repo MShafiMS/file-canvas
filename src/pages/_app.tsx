@@ -6,8 +6,9 @@ import { SidebarLayout } from '@layouts';
 import { createTheme, PaletteMode, useMediaQuery } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { Store } from '@services';
-import '@styles/globals.css';
+import '@styles/globals.scss';
 import { NextPage } from 'next';
+import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -21,7 +22,7 @@ type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
 
-export default function App({ Component, pageProps }: AppPropsWithLayout) {
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppPropsWithLayout) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const { route, push, isReady } = useRouter();
   const { layout } = Component;
@@ -41,6 +42,8 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   const theme = useMemo(() => {
     if (mode) return createTheme(getTheme(mode));
   }, [mode]);
+
+  console.log(session);
 
   const getLayout = () => {
     switch (layout) {
@@ -73,7 +76,9 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
       </Head>
       <ColorModeContext.Provider value={colorMode}>
         <ThemeProvider theme={theme}>
-          <div data-theme={mode}>{getLayout()}</div>
+          <div data-theme={mode}>
+            <SessionProvider session={session}>{getLayout()}</SessionProvider>
+          </div>
         </ThemeProvider>
       </ColorModeContext.Provider>
     </ErrorBoundary>

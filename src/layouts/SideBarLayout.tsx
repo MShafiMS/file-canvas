@@ -14,9 +14,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import { CSSObject, Theme, styled, useTheme } from '@mui/material/styles';
+import { signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 const drawerWidth = 240;
 
@@ -98,22 +99,29 @@ interface IProps {
 }
 
 export const SidebarLayout = ({ children }: IProps) => {
+  const { status, data } = useSession();
   const theme = useTheme();
   const isLargeDevice = useMediaQuery(theme.breakpoints.up('sm'));
   const [open, setOpen] = useState(isLargeDevice);
   const { route, push } = useRouter();
 
+  console.log(data);
+
   const isSelected = (menuRoute: string): boolean => {
     return route === menuRoute;
-  };
-
-  const handleLogout = async () => {
-    push('/signin');
   };
 
   const handleDrawerClick = () => {
     setOpen(!open);
   };
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      signIn();
+    }
+  }, [status]);
+
+  console.log(status);
 
   const DrawerChild = () => {
     return (

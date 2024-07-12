@@ -1,7 +1,7 @@
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
+import { Template } from '@types';
 import * as React from 'react';
 import { Canvas } from './Canvas';
 
@@ -14,24 +14,17 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export const CanvasDialog = () => {
-  const [open, setOpen] = React.useState(false);
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  template: Template;
+};
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
+export const CanvasDialog = ({ open, onClose, template }: Props) => {
   return (
     <React.Fragment>
-      <Button variant="outlined" onClick={handleClickOpen}>
-        Open full-screen dialog
-      </Button>
-      <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={Transition}>
-        <Canvas onClose={handleClose} />
+      <Dialog fullScreen open={open} onClose={onClose} TransitionComponent={Transition}>
+        <Canvas onClose={onClose} template={template} />
       </Dialog>
     </React.Fragment>
   );

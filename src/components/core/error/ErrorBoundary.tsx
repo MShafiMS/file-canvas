@@ -1,3 +1,5 @@
+import { Box, Button, Link, Typography } from '@mui/material';
+import { Warning } from '@phosphor-icons/react';
 import { ErrorBoundary as NextErrorBoundary } from 'next/dist/client/components/error-boundary';
 import { ReactNode } from 'react';
 
@@ -20,23 +22,22 @@ export const ErrorBoundary = ({ children }: Props) => {
 
 const ErrorComponent = ({ error, reset }: ErrorComponentPropr) => {
   return (
-    <div className="flex h-screen">
-      <div className="m-auto">
-        <img src="/images/warning.svg" alt="error" className="m-auto" />
-        <h1 className="m-auto font-bold text-xl text-center py-4">{error.message}</h1>
-        <h3 className="m-auto text-gray-400 text-sm text-center py-2">
-          Try refreshing the page and if it doesn&#39;t solve the issue, please email us at{' '}
-          <a href="mailto:dev.muhammadshafi@gmail.com" className="text-blue-500">
-            dev.muhammadshafi@gmail.com
-          </a>
-        </h3>
-        <button
-          className="m-auto flex rounded-md bg-blue-500 border border-transparent shadow-sm text-base font-medium text-white focus:outline-none px-6 py-2 mt-5"
-          onClick={reset}
-        >
-          Reload
-        </button>
-      </div>
-    </div>
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}
+    >
+      <Warning size={80} weight="light" color="#EFBC5B" />
+      <Typography display="block" variant="h5">
+        {error.message}
+      </Typography>
+      <Typography marginBottom={2} display="block" variant="subtitle1">
+        Try refreshing the page and if it doesn&#39;t solve the issue, please email us at{' '}
+        <Link href="mailto:dev.muhammadshafi@gmail.com" className="text-blue-500">
+          dev.muhammadshafi@gmail.com
+        </Link>
+      </Typography>
+      <Button variant="contained" color="info" onClick={reset}>
+        Reload
+      </Button>
+    </Box>
   );
 };

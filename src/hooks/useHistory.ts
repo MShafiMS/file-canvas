@@ -36,12 +36,31 @@ export const useHistory = (initialElements: ElementData[]) => {
     setIndex(0);
   };
 
-  const removeById = (id: number) => {
+  const removeById = (id: string) => {
     const elements = history[index];
-    const newHistory = elements.filter((elm) => elm.id !== id).map((elm, id) => ({ ...elm, id }));
+    const newHistory = elements.filter((elm) => elm.id !== id);
     setHistory((prev) => [...prev, newHistory]);
     setIndex((prevState) => prevState + 1);
   };
 
-  return { elements: history[index], setElements: setState, undo, redo, reset, removeById };
+  const changeDirection = (id: string, direction: 'forward' | 'backward') => {
+    const elements = history[index];
+    const elementIndex = elements.findIndex((element) => element.id === id);
+
+    if (elementIndex === -1) {
+      return;
+    }
+
+    if (direction === 'backward' && elementIndex < elements.length - 1) {
+      // Move element forward
+      [elements[elementIndex], elements[elementIndex + 1]] = [elements[elementIndex + 1], elements[elementIndex]];
+    } else if (direction === 'forward' && elementIndex > 0) {
+      // Move element backward
+      [elements[elementIndex], elements[elementIndex - 1]] = [elements[elementIndex - 1], elements[elementIndex]];
+    }
+    setHistory((prev) => [...prev, elements]);
+    setIndex((prevState) => prevState + 1);
+  };
+
+  return { elements: history[index], setElements: setState, undo, redo, reset, removeById, changeDirection };
 };
