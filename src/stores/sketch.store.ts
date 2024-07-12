@@ -52,9 +52,12 @@ export const SketchStore = t
       return sketch;
     },
 
-    deleteSketch(id: string) {
+    deleteSketch: flow(function* (id: string) {
+      self.isLoading = true;
+      yield sketchService.deleteSketch(id);
       self.sketchMap.delete(id);
-    },
+      self.isLoading = false;
+    }),
 
     loadSketches: flow(function* () {
       const createdBy = getRoot<IStore>(self).userStore.loggedInUserId;

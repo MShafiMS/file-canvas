@@ -1,6 +1,7 @@
 import { templates } from '@constant';
-import { Instance, applySnapshot, destroy, flow, types as t } from 'mobx-state-tree';
+import { Instance, applySnapshot, destroy, types as t } from 'mobx-state-tree';
 import { useMemo } from 'react';
+import { FileStore, IFileStore } from './file.store';
 import { ISketch } from './models';
 import { ISketchStore, SketchStore } from './sketch.store';
 import { IUserStore, UserStore } from './user.store';
@@ -8,6 +9,7 @@ import { IUserStore, UserStore } from './user.store';
 export const RootStore = t
   .model('RootStore', {
     userStore: t.optional(UserStore, {}),
+    fileStore: t.optional(FileStore, {}),
     sketchStore: t.optional(SketchStore, {
       templates: templates as unknown as ISketch[],
     }),
@@ -18,20 +20,15 @@ export const RootStore = t
     const reset = () => {
       destroy(self.userStore);
       destroy(self.sketchStore);
+      destroy(self.fileStore);
     };
 
-    const loadInitialData = flow(function* () {
-      self.isLoadingIntitalData = true;
-      //   yield Promise.all([self.adminStore.loadLoggedInUser()]);
-      self.isLoadedIntitalData = true;
-      self.isLoadingIntitalData = false;
-    });
-
-    return { reset, loadInitialData };
+    return { reset };
   });
 
 export interface IStore {
   userStore: IUserStore;
+  fileStore: IFileStore;
   sketchStore: ISketchStore;
 }
 

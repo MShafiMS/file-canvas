@@ -16,7 +16,7 @@ export const Sketch = t
     title: t.string,
     elements: t.array(t.frozen<ElementData>()),
     createdBy: t.string,
-    privacy: t.enumeration<PRIVACY>('PRIVACY', Object.values(PRIVACY)),
+    privacy: t.enumeration('PRIVACY', Object.values(PRIVACY)),
     collaborators: t.maybe(t.array(Collaborator)),
     isSaved: t.optional(t.boolean, false),
     isLoading: t.optional(t.boolean, false),

@@ -1,3 +1,4 @@
+export * from './file.enum';
 export * from './layout.enum';
 export * from './sketch.enum';
 export * from './storage-key.enum';
