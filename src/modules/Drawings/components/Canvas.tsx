@@ -55,13 +55,11 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: I
     context.save();
     context.translate(panOffset.x, panOffset.y);
     const roughCanvas = rough.canvas(canvas);
-    if (elements) {
-      elements.forEach((element) => {
-        // Draw elements in their original order
-        if (action === 'writing' && selectedElement?.id === element.id) return;
-        drawElement(roughCanvas, context, element);
-      });
-    }
+    elements.forEach((element) => {
+      // Draw elements in their original order
+      if (action === 'writing' && selectedElement?.id === element.id) return;
+      drawElement(roughCanvas, context, element);
+    });
     context.restore();
   }, [elements, action, selectedElement, panOffset]);
 
@@ -159,6 +157,7 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: I
             setSelectedElement({ ...element, offsetX, offsetY });
           }
           setElements((prevState) => prevState);
+
           if (element.position === 'inside') {
             setAction('moving');
           } else {
@@ -326,7 +325,7 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: I
         <CanvasMenu reset={reset} saveAsImage={exportToImage} handleSave={handleSave} />
         <Tools setTool={setTool} tool={tool} />
         <Panel attributes={attributes} setAttributes={(a) => setAttributes(a)} />
-        {elements && elements.length > 0 && (
+        {elements.length > 0 && (
           <Layers
             elements={elements}
             removeElement={removeById}

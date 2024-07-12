@@ -46,15 +46,15 @@ export const useHistory = (initialElements: ElementData[]) => {
   const changeDirection = (id: string, direction: 'forward' | 'backward') => {
     const elements = history[index];
     const elementIndex = elements.findIndex((element) => element.id === id);
-
+    console.log({ elementIndex, direction });
     if (elementIndex === -1) {
       return;
     }
 
-    if (direction === 'backward' && elementIndex < elements.length - 1) {
+    if (direction === 'forward' && elementIndex < elements.length - 1) {
       // Move element forward
       [elements[elementIndex], elements[elementIndex + 1]] = [elements[elementIndex + 1], elements[elementIndex]];
-    } else if (direction === 'forward' && elementIndex > 0) {
+    } else if (direction === 'backward' && elementIndex > 0) {
       // Move element backward
       [elements[elementIndex], elements[elementIndex - 1]] = [elements[elementIndex - 1], elements[elementIndex]];
     }

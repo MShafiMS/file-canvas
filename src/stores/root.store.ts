@@ -7,11 +7,8 @@ import { IUserStore, UserStore } from './user.store';
 
 export const RootStore = t
   .model('RootStore', {
-    userStore: t.optional(UserStore, {
-      users: [],
-    }),
+    userStore: t.optional(UserStore, {}),
     sketchStore: t.optional(SketchStore, {
-      sketches: [],
       templates: templates as unknown as ISketch[],
     }),
     isLoadingIntitalData: t.optional(t.boolean, false),
