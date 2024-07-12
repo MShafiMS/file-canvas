@@ -6,12 +6,12 @@ export const authOptions = {
   // Configure one or more authentication providers
   providers: [
     GoogleProvider({
-      clientId: '1043947360898-c59fjnfavmd8jg7kjmk5rr8h32qqgedt.apps.googleusercontent.com',
-      clientSecret: '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',
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET as string,
     }),
     GitHubProvider({
-      clientId: 'Ov23li8MfQ7AusjAr8KO',
-      clientSecret: '6ee4efe9a1e5f6ff96044bfef72b8ec88c7b8539',
+      clientId: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.NEXT_PUBLIC_GITHUB_CLIENT_SECRET as string,
     }),
   ],
   // pages: {
