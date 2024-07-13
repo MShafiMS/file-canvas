@@ -4,7 +4,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Chart } from './Chart';
 import { Drawings } from './Drawings';
-import { RecentDrawings } from './Recent';
+import { RecentDrawings, RecentFiles } from './Recent';
 
 function Copyright(props: any) {
   return (
@@ -58,7 +58,7 @@ export const DashboardModule = () => {
               bgcolor: 'background.default',
             }}
           >
-            <RecentDrawings />
+            <RecentFiles />
           </Paper>
         </Grid>
         {/* Recent Drawings */}
