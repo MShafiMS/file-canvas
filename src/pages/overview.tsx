@@ -1,7 +1,8 @@
 import { Layout } from '@enums';
+import { DashboardModule } from '@modules/Dashboard';
 
 const Overview = () => {
-  return <div>Overview</div>;
+  return <DashboardModule />;
 };
 
 Overview.layout = Layout.SIDEBAR;

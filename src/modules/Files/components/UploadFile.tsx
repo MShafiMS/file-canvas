@@ -19,7 +19,6 @@ export const FileUpload = observer(() => {
   const { uploadFiles, uploading } = fileStore;
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [object, setObject] = useState('');
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
@@ -60,9 +59,9 @@ export const FileUpload = observer(() => {
         variant="contained"
         tabIndex={-1}
         color="info"
-        startIcon={<CloudUpload />}
+        size="small"
       >
-        Upload file
+        <CloudUpload fontSize="small" />
       </Button>
       <Dialog
         onClose={handleClose}

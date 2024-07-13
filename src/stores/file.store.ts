@@ -1,5 +1,4 @@
 import { FILE } from '@enums';
-import { Store } from '@services';
 import ObjectID from 'bson-objectid';
 import { flow, getRoot, Instance, types as t } from 'mobx-state-tree';
 import { FileModel, IFileModel } from './models';
@@ -42,9 +41,9 @@ export const FileStore = t
         });
       });
       const newFiles = yield Promise.all(filesPromises);
-      const existingFiles = JSON.parse(Store.get('Files') || '[]');
-      const updatedFiles = [...existingFiles, ...newFiles];
-      Store.set('Files', JSON.stringify(updatedFiles));
+      // const existingFiles = JSON.parse(Store.get('Files') || '[]');
+      // const updatedFiles = [...existingFiles, ...newFiles];
+      // Store.set('Files', JSON.stringify(updatedFiles));
       self.addFiles(newFiles);
       self.uploading = false;
     }),
@@ -53,8 +52,8 @@ export const FileStore = t
       const createdBy = getRoot<IStore>(self).userStore.loggedInUserId;
       if (!createdBy) return;
       self.isLoading = true;
-      const files = JSON.parse(Store.get('Files') || '[]');
-      if (files) self.addFiles(files);
+      // const files = JSON.parse(Store.get('Files') || '[]');
+      // if (files) self.addFiles(files);
       self.isLoading = false;
     }),
   }));

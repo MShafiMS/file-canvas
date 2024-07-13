@@ -2,7 +2,6 @@ import { FullScreenLoader } from '@components/core';
 import {
   Box,
   ButtonBase,
-  Grid,
   IconButton,
   List,
   ListItem,
@@ -52,52 +51,48 @@ export const DrawingsModule = observer(() => {
       <Typography paddingX={1} display="block" variant="h6" marginBottom={1}>
         Start a new sketch
       </Typography>
-      <Grid container gap={4}>
-        <Grid item sm={6} md={2}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <ButtonBase
+            onClick={() => handleClickOpen(createSketch()._id)}
+            sx={{
+              width: 140,
+              height: 180,
+              bgcolor: 'background.default',
+              borderRadius: 1,
+              border: 0.5,
+              borderColor: grey[300],
+            }}
+          >
+            <Plus weight="bold" size={44} />
+          </ButtonBase>
+          <Typography paddingX={1} display="block" marginTop={1} fontSize={14} fontWeight={500}>
+            Blank
+          </Typography>
+        </Box>
+        {templates.map((template) => (
           <Box>
             <ButtonBase
-              onClick={() => handleClickOpen(createSketch()._id)}
+              onClick={() => handleClickOpen(template._id)}
               sx={{
-                width: '100%',
-                height: 200,
-                bgcolor: 'background.default',
+                width: 140,
+                height: 180,
+                bgcolor: 'whitesmoke',
                 borderRadius: 1,
                 border: 0.5,
                 borderColor: grey[300],
               }}
             >
-              <Plus weight="bold" size={44} />
+              {/* <img src={template.img} style={{ width: '100%', height: 'auto' }} alt="" /> */}
+              {/* <Plus weight="bold" size={44} color="#405D72" /> */}
             </ButtonBase>
+
             <Typography paddingX={1} display="block" marginTop={1} fontSize={14} fontWeight={500}>
-              Blank
+              {template.title}
             </Typography>
           </Box>
-        </Grid>
-        {templates.map((template) => (
-          <Grid key={template._id} item sm={6} md={2}>
-            <Box>
-              <ButtonBase
-                onClick={() => handleClickOpen(template._id)}
-                sx={{
-                  width: '100%',
-                  height: 200,
-                  bgcolor: 'whitesmoke',
-                  borderRadius: 1,
-                  border: 0.5,
-                  borderColor: grey[300],
-                }}
-              >
-                {/* <img src={template.img} style={{ width: '100%', height: 'auto' }} alt="" /> */}
-                {/* <Plus weight="bold" size={44} color="#405D72" /> */}
-              </ButtonBase>
-
-              <Typography paddingX={1} display="block" marginTop={1} fontSize={14} fontWeight={500}>
-                {template.title}
-              </Typography>
-            </Box>
-          </Grid>
         ))}
-      </Grid>
+      </Box>
       {sketches.length > 0 && (
         <Box sx={{ marginTop: 2 }}>
           <Typography paddingX={1} display="block" variant="h6" marginBottom={1}>

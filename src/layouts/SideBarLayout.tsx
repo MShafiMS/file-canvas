@@ -241,37 +241,33 @@ export const SidebarLayout = observer(({ children }: IProps) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }, color: 'primary.light' }}
-          >
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, color: 'primary.light' }}>
             {getRouteLabel(route)}
           </Typography>
           <ToggleTheme />
           <AccountMenu />
         </Toolbar>
       </AppBar>
-      {/* mobile drawer  */}
-      <MuiDrawer
-        variant="temporary"
-        open={open}
-        onClose={handleDrawerClick}
-        ModalProps={{
-          keepMounted: true,
-        }}
-        sx={{
-          display: { xs: 'block', sm: 'none' },
-          width: drawerWidth,
-        }}
-      >
-        <DrawerChild />
-      </MuiDrawer>
-      {/* desktop drawer  */}
-      <Drawer variant="permanent" open={open} sx={{ display: { xs: 'none', sm: 'block' } }}>
-        <DrawerChild />
-      </Drawer>
+      {isLargeDevice ? (
+        <Drawer variant="permanent" open={open} sx={{ display: { xs: 'none', sm: 'block' } }}>
+          <DrawerChild />
+        </Drawer>
+      ) : (
+        <MuiDrawer
+          variant="temporary"
+          open={open}
+          onClose={handleDrawerClick}
+          ModalProps={{
+            keepMounted: true,
+          }}
+          sx={{
+            display: { xs: 'block', sm: 'none' },
+            width: drawerWidth,
+          }}
+        >
+          <DrawerChild />
+        </MuiDrawer>
+      )}
       <Box
         component="main"
         sx={{
@@ -281,10 +277,10 @@ export const SidebarLayout = observer(({ children }: IProps) => {
           overflowY: 'auto',
           bgcolor: 'background.default',
           color: 'primary.light',
-          marginTop: 8,
+          marginTop: { sm: 8, xs: 7 },
+          paddingBottom: { sm: 8, xs: 7 },
         }}
       >
-        <DrawerHeader sx={{ display: { xs: 'block', sm: 'none' } }} />
         {children}
       </Box>
     </Box>

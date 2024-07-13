@@ -60,7 +60,11 @@ export const FileCard = observer(({ view, file }: IProps) => {
               sx={{ paddingY: 1.5 }}
               subheader={file.name.slice(0, 20)}
             />
-            <CardMedia component="img" height="160" image={file.downloadUrl} sx={{ marginBottom: 1 }} />
+            <CardMedia
+              component="img"
+              image={file.downloadUrl}
+              sx={{ marginBottom: 1, height: 140, objectFit: 'cover', objectPosition: 'center' }}
+            />
             <Typography sx={{ paddingX: 2 }} variant="caption" color="text.secondary">
               You edited • 11:57 PM
             </Typography>

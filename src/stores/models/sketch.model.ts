@@ -18,6 +18,7 @@ export const Sketch = t
     createdBy: t.string,
     privacy: t.enumeration('PRIVACY', Object.values(PRIVACY)),
     collaborators: t.maybe(t.array(Collaborator)),
+    isTemplate: t.maybe(t.boolean),
     isSaved: t.optional(t.boolean, false),
     isLoading: t.optional(t.boolean, false),
   })
@@ -27,7 +28,6 @@ export const Sketch = t
       self.title = title || self.title;
       self.isLoading = true;
       const res = yield sketchService.updateSketch(self._id, self);
-      if (res) console.log(res);
       self.isLoading = false;
       self.isSaved = true;
     }),
