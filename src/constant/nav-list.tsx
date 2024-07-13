@@ -17,6 +17,7 @@ interface ISidebarMenu {
   icon: ReactNode;
   submenus?: ISidebarMenu[];
   isOpenInNewTab?: boolean;
+  opened?: boolean;
 }
 
 interface ISidebarNavList {
@@ -31,11 +32,13 @@ export const navList: ISidebarNavList[] = [
         label: 'Overview',
         route: '/overview',
         icon: <House weight="fill" />,
+        opened: true,
       },
       {
         label: 'Files',
         route: '/files',
         icon: <FolderSimple weight="fill" />,
+        opened: true,
       },
     ],
   },
@@ -46,6 +49,7 @@ export const navList: ISidebarNavList[] = [
         label: 'Drawings',
         route: '/drawings',
         icon: <PaintBrush weight="fill" />,
+        opened: true,
       },
       {
         label: 'Templates',

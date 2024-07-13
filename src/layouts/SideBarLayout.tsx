@@ -171,7 +171,11 @@ export const SidebarLayout = observer(({ children }: IProps) => {
               }
             >
               {listItem.menus.map((menu) => (
-                <Link href={menu.route} key={menu.label} style={{ textDecoration: 'none' }}>
+                <Link
+                  href={menu.opened ? menu.route : '#'}
+                  key={menu.label}
+                  style={{ textDecoration: 'none', opacity: menu.opened ? 1 : 0.4 }}
+                >
                   <ListItem
                     selected={isSelected(menu.route)}
                     disablePadding
