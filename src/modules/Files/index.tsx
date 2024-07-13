@@ -21,7 +21,7 @@ export const FilesModule = observer(() => {
       .slice()
       .reverse()
       .filter((file) => file.fileType === type && file.name.trim().includes(searchKey.trim()));
-  }, [type, searchKey]);
+  }, [type, searchKey, files]);
 
   useEffect(() => {
     loadFiles();
