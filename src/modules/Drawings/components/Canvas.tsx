@@ -1,7 +1,8 @@
 import { Theme, Tool } from '@enums';
 import { useHistory, usePressedKeys } from '@hooks';
 import useCanvasEvents from '@hooks/useCanvasEvents';
-import { Box, Button, ButtonGroup, useTheme } from '@mui/material';
+import { DynamicFeed, FormatColorFill, Redo, Undo } from '@mui/icons-material';
+import { AppBar, Box, Button, ButtonGroup, IconButton, Popover, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { ISketch } from '@stores';
 import { ElementAttributes, ElementData } from '@types';
@@ -27,11 +28,10 @@ import { Tools } from './Tools';
 type Action = 'moving' | 'resizing' | 'drawing' | 'writing' | 'erasing' | 'panning' | 'none';
 
 export const Canvas = ({ onClose, template }: { onClose: () => void; template: ISketch }) => {
-  const {
-    palette: { mode },
-  } = useTheme();
+  const theme = useTheme();
   const { elements, setElements, undo, redo, reset, removeById, changeDirection } = useHistory(template.elements);
   const pressedKeys = usePressedKeys();
+  const isLargeDevice = useMediaQuery(theme.breakpoints.up('sm'));
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const [tool, setTool] = useState<Tool>(Tool.PENCIL);
@@ -40,6 +40,23 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: I
   const [action, setAction] = useState<Action>('none');
   const [startPanMousePosition, setStartPanMousePosition] = useState({ x: 0, y: 0 });
   const [attributes, setAttributes] = useState<ElementAttributes>(defaultAttributes);
+  const [popover, setPopover] = useState<'none' | 'layers' | 'panel'>('none');
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const openPanel = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+    setPopover('panel');
+  };
+
+  const openLayers = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+    setPopover('layers');
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setPopover('none');
+  };
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -321,29 +338,15 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: I
         showWarn={JSON.stringify(elements) !== JSON.stringify(template.elements)}
         handleSave={handleSave}
       />
-      <Box sx={{ position: 'relative', height: '100vh', bgcolor: mode === Theme.LIGHT ? grey[100] : grey[800] }}>
+      <Box
+        sx={{
+          position: 'relative',
+          height: '100vh',
+          bgcolor: theme.palette.mode === Theme.LIGHT ? grey[100] : grey[800],
+        }}
+      >
         <CanvasMenu reset={reset} saveAsImage={exportToImage} handleSave={handleSave} />
         <Tools setTool={setTool} tool={tool} />
-        <Panel attributes={attributes} setAttributes={(a) => setAttributes(a)} />
-        {elements.length > 0 && (
-          <Layers
-            elements={elements}
-            removeElement={removeById}
-            selectedElement={selectedElement}
-            changeDirection={changeDirection}
-          />
-        )}
-        <ButtonGroup
-          disableElevation
-          variant="contained"
-          size="small"
-          color="inherit"
-          aria-label="Disabled button group"
-          sx={{ position: 'absolute', zIndex: 10, bottom: 16, left: 16 }}
-        >
-          <Button onClick={undo}>Undo</Button>
-          <Button onClick={redo}>Redo</Button>
-        </ButtonGroup>
         {action === 'writing' && selectedElement ? (
           <textarea
             ref={textAreaRef}
@@ -367,6 +370,72 @@ export const Canvas = ({ onClose, template }: { onClose: () => void; template: I
           />
         ) : null}
         <canvas id="canvas" ref={canvasRef} style={{ position: 'fixed', color: 'black' }} />
+        {isLargeDevice ? (
+          <>
+            <Panel attributes={attributes} setAttributes={(a) => setAttributes(a)} />
+            <Layers
+              elements={elements}
+              removeElement={removeById}
+              selectedElement={selectedElement}
+              changeDirection={changeDirection}
+            />
+            <ButtonGroup
+              disableElevation
+              variant="contained"
+              size="small"
+              color="inherit"
+              aria-label="Disabled button group"
+              sx={{ position: 'absolute', zIndex: 10, bottom: 16, left: 16 }}
+            >
+              <Button onClick={undo}>Undo</Button>
+              <Button onClick={redo}>Redo</Button>
+            </ButtonGroup>
+          </>
+        ) : (
+          <>
+            <Popover
+              id={popover}
+              open={Boolean(anchorEl)}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              PaperProps={{ sx: { bgcolor: 'transparent' } }}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: popover === 'panel' ? 'right' : 'left',
+              }}
+            >
+              {popover === 'panel' ? (
+                <Panel attributes={attributes} setAttributes={(a) => setAttributes(a)} isPopover />
+              ) : popover === 'layers' ? (
+                <Layers
+                  elements={elements}
+                  removeElement={removeById}
+                  selectedElement={selectedElement}
+                  changeDirection={changeDirection}
+                  isPopover
+                />
+              ) : null}
+            </Popover>
+            <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
+              <Toolbar>
+                <IconButton onClick={openPanel} color="inherit" aria-label="open drawer">
+                  <FormatColorFill />
+                </IconButton>
+                <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
+                  <IconButton onClick={undo} color="inherit" aria-label="open drawer">
+                    <Undo />
+                  </IconButton>
+                  <IconButton onClick={redo} color="inherit" aria-label="open drawer">
+                    <Redo />
+                  </IconButton>
+                </Box>
+                <IconButton onClick={openLayers} color="inherit">
+                  <DynamicFeed />
+                </IconButton>
+              </Toolbar>
+            </AppBar>
+          </>
+        )}
       </Box>
     </>
   );

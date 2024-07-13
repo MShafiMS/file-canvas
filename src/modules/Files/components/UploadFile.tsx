@@ -19,14 +19,13 @@ export const FileUpload = observer(() => {
   const { uploadFiles, uploading } = fileStore;
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [object, setObject] = useState('');
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
     if (fileList?.length) {
       const newFiles = Array.from(fileList);
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-      console.log('Files added:', newFiles);
-      console.log('All files:', [...files, ...newFiles]);
     }
   };
 

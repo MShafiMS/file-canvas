@@ -35,6 +35,7 @@ export const Tools = ({ tool, setTool }: IProps) => {
         marginBottom: 2,
         borderRadius: 2,
         display: 'flex',
+        flexWrap: 'wrap',
         gap: 1,
       }}
     >

@@ -12,31 +12,6 @@ export class FileService {
     }
   }
 
-  async uploadToFileDB(files: File[]) {
-    const data = new FormData();
-    files.forEach((file) => {
-      data.append('file', file, file.name);
-    });
-
-    const config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: 'https://api.pdfrest.com/upload',
-      headers: {
-        'Api-Key': '5a3a3586-64b0-4ac2-8694-b959477561a2',
-        'Content-Type': 'multipart/form-data',
-      },
-      data: data,
-    };
-
-    try {
-      const response = await http.default(config);
-      return response.data.files;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   async uploadFile(file: IFileModel[]) {
     try {
       const res = await http.default.post(`/files`, file);

@@ -156,7 +156,7 @@ export const SidebarLayout = observer(({ children }: IProps) => {
               component="nav"
               saria-labelledby="nested-list-subheader"
               disablePadding
-              sx={{ paddingX: 2 }}
+              sx={{ paddingX: open ? 2 : 1 }}
               subheader={
                 listItem.subHeader &&
                 open && (

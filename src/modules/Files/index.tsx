@@ -26,6 +26,7 @@ export const FilesModule = observer(() => {
   useEffect(() => {
     loadFiles();
   }, []);
+
   if (isLoading) return <FullScreenLoader />;
   return (
     <div>

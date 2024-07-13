@@ -31,13 +31,10 @@ interface IProps {
   removeElement: (id: string) => void;
   selectedElement: ElementData | null;
   changeDirection: (id: string, direction: 'forward' | 'backward') => void;
+  isPopover?: boolean;
 }
 
 const style = {
-  position: 'absolute',
-  right: 16,
-  top: 16,
-  zIndex: 10,
   padding: 1,
   bgcolor: 'primary.dark',
   color: 'primary.light',
@@ -47,9 +44,10 @@ const style = {
   borderColor: 'divider',
 };
 
-export const Layers = ({ elements, removeElement, selectedElement, changeDirection }: IProps) => {
+export const Layers = ({ elements, removeElement, selectedElement, changeDirection, isPopover }: IProps) => {
+  const styles = isPopover ? {} : { position: 'absolute', right: 16, top: 16, minHeight: 250, zIndex: 10 };
   return (
-    <Paper elevation={3} sx={style}>
+    <Paper elevation={3} sx={{ ...style, ...styles }}>
       <Typography display="block" fontSize={12} fontWeight={600}>
         Layers
       </Typography>
@@ -70,21 +68,21 @@ export const Layers = ({ elements, removeElement, selectedElement, changeDirecti
                 {index > 0 && (
                   <IconButton
                     onClick={() => changeDirection(element.id, 'forward')}
-                    color="inherit"
+                    sx={{ color: 'primary.light' }}
                     size="small"
                     edge="end"
                   >
-                    <ArrowUp color="black" />
+                    <ArrowUp />
                   </IconButton>
                 )}
                 {index + 1 !== elements.length && (
                   <IconButton
                     onClick={() => changeDirection(element.id, 'backward')}
-                    color="inherit"
+                    sx={{ color: 'primary.light' }}
                     size="small"
                     edge="end"
                   >
-                    <ArrowDown color="black" />
+                    <ArrowDown />
                   </IconButton>
                 )}
                 <IconButton

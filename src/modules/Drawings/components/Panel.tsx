@@ -1,30 +1,31 @@
+import { ColorInput } from '@components/core';
 import { STROKE } from '@enums';
 import { Box, ButtonBase, Paper, Typography } from '@mui/material';
 import { ElementAttributes } from '@types';
 
 const colors = ['#000000', '#e91e63', '#9c27b0', '#3f51b5', '#2196f3'];
-const bgcolors = ['', '#f48fb1', '#ce93d8', '#9fa8da', '#90caf9'];
+const bgcolors = ['#FFFFFF', '#f48fb1', '#ce93d8', '#9fa8da', '#90caf9'];
 const strokes = Object.values(STROKE);
 interface IProps {
   attributes: ElementAttributes;
   setAttributes: (a: ElementAttributes) => void;
+  isPopover?: boolean;
 }
 
-export const Panel = ({ attributes, setAttributes }: IProps) => {
+export const Panel = ({ attributes, setAttributes, isPopover }: IProps) => {
   const { fillColor, strokeColor, strokeWidth } = attributes;
 
   const handleSetAttributes = (attr: Partial<ElementAttributes>) => {
     setAttributes({ ...attributes, ...attr });
   };
 
+  const styles = isPopover ? {} : { position: 'absolute', left: 16, top: 60, zIndex: 10 };
+
   return (
     <Paper
       elevation={1}
       sx={{
-        position: 'absolute',
-        left: 16,
-        top: 60,
-        zIndex: 10,
+        ...styles,
         padding: 1,
         bgcolor: 'background.default',
         color: 'primary.light',
@@ -39,7 +40,7 @@ export const Panel = ({ attributes, setAttributes }: IProps) => {
       <Typography display="block" marginTop={1} fontSize={12}>
         Stroke
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1, marginTop: 1, paddingX: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1, marginTop: 1, paddingX: 1, marginBottom: 2 }}>
         {colors.map((color, i) => (
           <ButtonBase
             onClick={() => handleSetAttributes({ strokeColor: color })}
@@ -56,10 +57,15 @@ export const Panel = ({ attributes, setAttributes }: IProps) => {
           />
         ))}
       </Box>
+      <ColorInput
+        value={strokeColor}
+        label="Custom Stroke"
+        onChange={(color) => handleSetAttributes({ strokeColor: color })}
+      />
       <Typography display="block" marginTop={1} fontSize={12}>
         Background
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1, marginTop: 1, paddingX: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1, marginTop: 1, paddingX: 1, marginBottom: 2 }}>
         {bgcolors.map((color, i) => (
           <ButtonBase
             key={i}
@@ -77,6 +83,11 @@ export const Panel = ({ attributes, setAttributes }: IProps) => {
           />
         ))}
       </Box>
+      <ColorInput
+        value={fillColor}
+        label="Custom Background"
+        onChange={(color) => handleSetAttributes({ fillColor: color })}
+      />
       <Typography display="block" marginTop={1} fontSize={12}>
         Stroke Width
       </Typography>
