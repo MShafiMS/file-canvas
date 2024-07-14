@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
-export const Drawing = observer(() => {
+const Drawing = observer(() => {
   const { sketchStore } = useStores();
   const { sketches, selectedSketch } = sketchStore;
   const router = useRouter();
@@ -21,3 +21,5 @@ export const Drawing = observer(() => {
   if (!selectedSketch) return <FullScreenLoader />;
   return <Canvas onClose={handleClose} template={selectedSketch} />;
 });
+
+export default Drawing;
