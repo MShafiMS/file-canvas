@@ -35,7 +35,7 @@ export const Chart = () => {
   return (
     <div>
       <Title>File Manager Usage Today</Title>
-      <svg width={width} height={height} style={{ border: '1px solid grey' }}>
+      <svg width={'100%'} height={height} style={{ border: '1px solid grey' }}>
         <polyline
           fill="none"
           stroke="blue"

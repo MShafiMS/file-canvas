@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
@@ -21,7 +22,7 @@ function Copyright(props: any) {
 
 export const DashboardModule = () => {
   return (
-    <>
+    <Box sx={{ marginBottom: 2 }}>
       <Grid sx={{ padding: 2 }} container spacing={3}>
         {/* Chart */}
         <Grid item xs={12} md={8} lg={9}>
@@ -69,6 +70,6 @@ export const DashboardModule = () => {
         </Grid>
       </Grid>
       <Copyright sx={{ pt: 4 }} />
-    </>
+    </Box>
   );
 };

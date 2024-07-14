@@ -29,7 +29,7 @@ type Action = 'moving' | 'resizing' | 'drawing' | 'writing' | 'erasing' | 'panni
 
 export const Canvas = ({ onClose, template }: { onClose: () => void; template: ISketch }) => {
   const theme = useTheme();
-  const { elements, setElements, undo, redo, reset, removeById, changeDirection } = useHistory(template.elements);
+  const { elements, setElements, undo, redo, reset, removeById, changeDirection } = useHistory([...template.elements]);
   const pressedKeys = usePressedKeys();
   const isLargeDevice = useMediaQuery(theme.breakpoints.up('sm'));
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

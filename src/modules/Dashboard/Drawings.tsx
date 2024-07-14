@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import Link from '@mui/material/Link';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -32,7 +33,7 @@ function preventDefault(event: React.MouseEvent) {
 
 export const Drawings = () => {
   return (
-    <>
+    <Box sx={{ width: '100%', overflowX: 'auto' }}>
       <Title>Recent Drawings</Title>
       <Table size="small">
         <TableHead>
@@ -59,6 +60,6 @@ export const Drawings = () => {
       <Link color="primary" href="#" onClick={preventDefault} sx={{ mt: 3 }}>
         See more drawings
       </Link>
-    </>
+    </Box>
   );
 };
